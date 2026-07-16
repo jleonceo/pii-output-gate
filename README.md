@@ -15,7 +15,7 @@ No dependencies (standard Python only), no database, no AI, no network.
 ### Qué resuelve
 
 Un agente de IA que trabaja con datos reales acaba, tarde o temprano, publicando algo: un informe, un
-commit, un correo, un fichero. Y lo hace con buena intención.
+commit, un correo, un fichero.
 
 Este proyecto nace de un escape real. Un agente publicó unas nóminas después de sustituir los nombres
 por `EMP001`, `EMP002`, y las dio por limpias. No lo estaban. Seudonimizar no es anonimizar: cambiar el
@@ -57,7 +57,7 @@ Antes de comparar, el texto se normaliza a fondo: fuera los caracteres invisible
 `Cf` entera, no una lista de unos cuantos), y se mapean los alfabetos que se dibujan igual que el latino.
 Esa parte no es cosmética, es la que aguanta el red team.
 
-### El red team, que es la parte que importa
+### El red team
 
 Un banco de pruebas en verde no demuestra nada: demuestra que pasan los casos que se te ocurrieron. La
 lección viene de otro guardián de este mismo sistema, que tenía 15 casos en verde y **falló abierto** ante
@@ -73,7 +73,7 @@ redteam_pii.py     11 intentos de evasión   VERDE
 regresion_pii.py   22 casos de regresión    VERDE
 ```
 
-### La frontera honesta
+### Frontera honesta
 
 Ejecuta la demo y verás el último caso:
 
@@ -81,7 +81,7 @@ Ejecuta la demo y verás el último caso:
 FRONTERA DECLARADA: un nombre que NO esta en la deny-list -> DEJA SALIR
 ```
 
-`Ramiro Villalobos` es un nombre, y sale. **No es un fallo: es el diseño, y conviene decirlo en voz alta.**
+`Ramiro Villalobos` es un nombre, y sale. **No es un fallo: es el diseño.**
 
 Esta capa caza lo que puede *comprobar*: una lista que le das, un dígito de control que valida. Un nombre
 que no conoce no lo puede comprobar. Y un detector que bloqueara todo lo que *parece* un nombre no podría
@@ -92,7 +92,7 @@ Cazar nombres desconocidos es otro problema y necesita un modelo de lenguaje. Es
 Cuando se midió contra un corpus de nóminas con un veredicto **pre-registrado**, salió **rojo**. Y se
 reportó como rojo. Dos de las tres fugas eran exactamente esta frontera, funcionando como estaba escrito.
 
-### Otra decisión que costó, y que quizá te ahorre el error
+### La excepción no se pide desde el texto
 
 La primera versión permitía una marca dentro del texto, `# pii:allow`, para autorizar una excepción. Se
 eliminó del contrato.
@@ -114,7 +114,7 @@ python regresion_pii.py  # 22 casos de regresión
 
 No hay `pip install`. No hace falta.
 
-### Lo que ya existe, y por qué esto igual
+### Lo que ya existe
 
 Antes de publicar esto fui a mirar qué había. Hay bastante, y conviene decirlo:
 
@@ -166,7 +166,7 @@ Este gate es una pieza de un trabajo mayor sobre sistemas con varios agentes. La
 ### What it solves
 
 An AI agent working with real data will publish something sooner or later: a report, a commit, an email,
-a file. And it will do so meaning well.
+a file.
 
 This project comes out of a real leak. An agent published payslips after replacing the names with
 `EMP001`, `EMP002`, and considered them clean. They were not. Pseudonymising is not anonymising: swapping
@@ -198,7 +198,7 @@ not leak PII.**
 Three checks, none of them guessing:
 
 1. **NIF and NIE** (the Spanish national ID): matching the pattern is not enough. The **check letter** is
-   validated (mod 23). A `12345678A` with the wrong letter is not an ID, it is a number, and it does not
+   validated (mod 23). A `12345678A` with the wrong letter is not an ID; it is a number, and it does not
    block.
 2. **IBAN**: same standard, the **mod 97** checksum is validated. No blocking anything that starts with ES.
 3. **Names**: against a **deny-list you pass in**. It is never committed: it arrives as a parameter.
@@ -207,7 +207,7 @@ Before any comparison the text is normalised hard: invisible characters go (the 
 category, not a handful of them), and alphabets that render identically to Latin get mapped. That part is
 not cosmetic. It is what survives the red team.
 
-### The red team, which is the part that matters
+### The red team
 
 A green test bench proves nothing: it proves the cases you thought of pass. The lesson comes from another
 guard in this same system that had 15 green cases and **failed open** on a `DROP` hidden inside an SQL
@@ -223,7 +223,7 @@ redteam_pii.py     11 evasion attempts    GREEN
 regresion_pii.py   22 regression cases    GREEN
 ```
 
-### The honest boundary
+### Honest boundary
 
 Run the demo and look at the last case:
 
@@ -231,8 +231,7 @@ Run the demo and look at the last case:
 DECLARED BOUNDARY: a name that is NOT on the deny-list -> LET THROUGH
 ```
 
-`Ramiro Villalobos` is a name, and it goes through. **That is not a bug, it is the design, and it is worth
-saying out loud.**
+`Ramiro Villalobos` is a name, and it goes through. **That is not a bug; it is the design.**
 
 This layer catches what it can *verify*: a list you gave it, a checksum it can compute. A name it does not
 know, it cannot verify. And a detector that blocked everything that *looks* like a name could not have zero
@@ -243,7 +242,7 @@ Catching unknown names is a different problem and needs a language model. This l
 When it was measured against a corpus of payslips with a **pre-registered** verdict, it came out **red**.
 And it was reported as red. Two of the three leaks were precisely this boundary, working as written.
 
-### Another decision that cost something, and might save you the mistake
+### The exception is not requested from the text
 
 The first version allowed an inline marker, `# pii:allow`, to authorise an exception. It was removed from
 the contract.
@@ -265,7 +264,7 @@ python regresion_pii.py  # 22 regression cases
 
 There is no `pip install`. You do not need one.
 
-### What already exists, and why this anyway
+### What already exists
 
 Before publishing this I went to look at what was out there. There is plenty, and it is worth saying so:
 
