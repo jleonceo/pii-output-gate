@@ -13,13 +13,10 @@ REGRESION: cada uno FALLA HOY (rojo) contra el detector vigente y describe el
 comportamiento CORRECTO esperado. Fijan el LISTON para el constructor. No se
 arregla el detector aqui (eso es del constructor); no se relaja ningun test.
 
-Estado esperado HOY (verificado contra `portero_pii.py` del 11/07 12:09):
-  - g01..g09  -> ROJO por el BUG (con la firma actual de 2 args analizar(texto, deny)).
-  - g10       -> ROJO por el BUG (la valvula inline hace fail-open).
-  Ninguno de g01..g10 necesita la nueva firma para ponerse en ROJO: todos llaman a
-  `analizar(texto, deny_list)` y el bug se manifiesta con el contrato actual.
-  (La prueba del override FUERA DE BANDA con la NUEVA firma vive en run_tests_pii.py,
-   test_h; esa si depende de la firma nueva y hoy da TypeError.)
+Cada caso g01..g22 nacio de un fallo REAL encontrado en el detector, no de imaginar
+lo que podria fallar. Cuando se escribieron, g01..g10 estaban en ROJO porque el bug
+que describen existia. Se arreglaron uno a uno y hoy la suite esta en VERDE: eso es
+lo que la convierte en una red de regresion y no en una lista de buenos deseos.
 
 ===========================================================================
 CAMBIO DE CONTRATO (decision ya tomada — se documenta aqui y en run_tests_pii.py)
@@ -279,7 +276,7 @@ class Regresion2NombrePrimerApellido(unittest.TestCase):
 
     def test_g14_nombre_mas_primer_apellido(self):
         # CONTRATO 3ª RONDA (decision tomada): la deny-list lleva ESTRUCTURA
-        # (pila / apellidos por separado, como en el maestro MySQL), no una cadena
+        # (pila / apellidos por separado, como en un maestro de personas), no una cadena
         # plana que haya que adivinar. Un str plano => solo NOMBRE COMPLETO (maxima
         # precision, 0-FP). Una entrada estructurada {"pila":[...], "apellidos":[...]}
         # => ademas la variante SEGURA "primer nombre de pila + primer apellido".
