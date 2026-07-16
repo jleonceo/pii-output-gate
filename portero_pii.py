@@ -31,8 +31,8 @@ CONTRATO DE NOMBRES (3ª RONDA, 11/07): la deny-list admite DOS formas por entra
   - str PLANO ("Rosa Blanca Perez Gil"): se bloquea SOLO como NOMBRE COMPLETO (todos los
     tokens consecutivos). NUNCA se derivan variantes parciales de un str plano -> maxima
     precision (mata el FP g22: "una rosa blanca" no lleva los apellidos, no es la persona).
-  - dict ESTRUCTURADO {"pila": [...], "apellidos": [...]} (como llega del maestro MySQL,
-    con columnas nombre/apellidos separadas): se bloquea (a) el nombre COMPLETO (pila+
+  - dict ESTRUCTURADO {"pila": [...], "apellidos": [...]} (como llega de un maestro de
+    personas, con nombre y apellidos en campos separados): se bloquea (a) el nombre COMPLETO (pila+
     apellidos) y (b) la variante SEGURA pila[0]+apellidos[0] (primer nombre + primer
     apellido). La ESTRUCTURA dice cual es el apellido; no se adivina por posicion (g14/g21).
 """
@@ -335,9 +335,14 @@ def _detecta_iban(texto):
 #   - La VALIDACION de la letra de control evita cazar un importe '1.234,56' (r06).
 # ---------------------------------------------------------------------------
 # Candidato DNI: arranca en digito, admite digitos/puntos/guiones/espacios, cierra en letra.
-_RE_NIF_CAND = re.compile(r"\d[\d.\-\s]{5,12}[A-Za-z]")
-# Candidato NIE: arranca en X/Y/Z, mismo cuerpo, cierra en letra.
-_RE_NIE_CAND = re.compile(r"[XYZxyz][\d.\-\s]{6,11}[A-Za-z]")
+# Va en LOOKAHEAD (?=(...)) a proposito: finditer NO solapa, asi que sin esto un digito
+# hasta 4 caracteres antes del DNI se tragaba el DNI entero en un match invalido, la
+# validacion fallaba, y el escaneo reanudaba DESPUES sin volver a mirarlo. Con eso,
+# 'EMP001 12345678Z 1850,00' (una linea de nomina seudonimizada) se FUGABA. El lookahead
+# no consume: genera un candidato en cada posicion. Ver el caso r12 del red team.
+_RE_NIF_CAND = re.compile(r"(?=(\d[\d.\-\s]{5,12}[A-Za-z]))")
+# Candidato NIE: arranca en X/Y/Z, mismo cuerpo, cierra en letra. Mismo motivo.
+_RE_NIE_CAND = re.compile(r"(?=([XYZxyz][\d.\-\s]{6,11}[A-Za-z]))")
 _LETRAS_DNI = "TRWAGMYFPDXBNJZSQVHLCKE"
 _PREFIJO_NIE = {"X": "0", "Y": "1", "Z": "2"}
 
@@ -361,7 +366,8 @@ def _detecta_nif(texto):
     """True si aparece un NIF/DNI/NIE valido (letra de control correcta)."""
     for regex in (_RE_NIF_CAND, _RE_NIE_CAND):
         for m in regex.finditer(texto):
-            compact = re.sub(r"[.\-\s]", "", m.group(0))
+            # group(1): el lookahead no consume, el candidato va en el grupo.
+            compact = re.sub(r"[.\-\s]", "", m.group(1))
             if _nif_o_nie_valido(compact):
                 return True
     return False
@@ -466,46 +472,3 @@ def analizar(entrada, deny_list, *, override=False, override_justificacion=None)
         motivo="Sin PII conocida detectada (capa A). Nota: no cubre nombres "
                "desconocidos (capa B/NER, diferida).",
     )
-
-
-# ---------------------------------------------------------------------------
-# AUXILIAR SEPARADO — generacion de la deny-list desde MySQL (runtime, NO en tests).
-# ---------------------------------------------------------------------------
-# Deliberadamente NO se invoca en la suite ni en el red-team (usan un fixture inventado).
-# `analizar()` es PURO: no toca la BD. Esta funcion se deja escrita y comentada; NO se
-# ejecuta en esta tarea (no extraer PII real). La deny-list NO se versiona en claro.
-#
-# Coherente con el CONTRATO DE NOMBRES 3ª RONDA: devuelve entradas ESTRUCTURADAS
-# {"pila": [...], "apellidos": [...]} desde las columnas nombre/apellidos separadas del
-# maestro. Asi el detector bloquea el nombre COMPLETO y la variante SEGURA primer-nombre +
-# primer-apellido, sin adivinar el apellido por posicion (g14/g21) y sin FPs (g22).
-#
-# def cargar_deny_list(conexion, incluir_terceros=False):
-#     """Genera la deny-list ESTRUCTURADA de nombres reales desde el maestro MySQL
-#     (READ-ONLY). Cada empleado -> {"pila": [nombres...], "apellidos": [apellidos...]}.
-#
-#     `conexion` es un conector DB-API ya abierto por el llamador con usuario de SOLO
-#     LECTURA. Esta funcion no abre ni cierra conexiones ni escribe jamas.
-#     """
-#     entradas = []
-#     cur = conexion.cursor()
-#     # Nucleo: empleados. Solo SELECT. Columnas nombre/apellidos SEPARADAS -> estructura.
-#     cur.execute("SELECT nombre, apellidos FROM empleados")
-#     for nombre, apellidos in cur.fetchall():
-#         pila = (nombre or "").split()
-#         apes = (apellidos or "").split()
-#         if pila or apes:
-#             entradas.append({"pila": pila, "apellidos": apes})
-#     # Extension opcional: clientes / proveedores. Razon social/comercial no tiene la
-#     # particion pila/apellidos -> entra como str PLANO (solo nombre COMPLETO bloquea).
-#     if incluir_terceros:
-#         for tabla in ("clientes", "proveedores"):
-#             cur.execute(
-#                 "SELECT razon_social, nombre_comercial FROM %s" % tabla  # nombres de tabla fijos
-#             )
-#             for razon, comercial in cur.fetchall():
-#                 for val in (razon, comercial):
-#                     if val and val.strip():
-#                         entradas.append(val.strip())  # str plano
-#     cur.close()
-#     return entradas

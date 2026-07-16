@@ -15,8 +15,10 @@ Cada caso ataca una via de evasion distinta del §6 del spec. Todos deben termin
 en BLOQUEO (o, el unico caso "trampa", en PASE deliberado: el guardarrail de falso
 positivo). El objetivo es fijar el LISTON antes de que exista el detector.
 
-Estado esperado HOY: ROJO LIMPIO — `portero_pii.py` no existe, luego todos los
-casos fallan por ImportError/ModuleNotFoundError.
+Este banco se escribio ANTES que el detector: en aquel momento todos los casos fallaban
+por ImportError, que era el ROJO LIMPIO esperado. Hoy estan en VERDE.
+El caso r12 es la excepcion y se anadio DESPUES (16/07/2026), cuando una auditoria del
+codigo encontro una fuga real que estos casos no cazaban.
 
 Contrato de interfaz: definido en la cabecera de run_tests_pii.py (fuente unica).
 Resumen usado aqui: analizar(entrada, deny_list) -> Resultado(.bloquear, .clases, .motivo).
@@ -131,6 +133,41 @@ class RedTeamNumerosYLocale(unittest.TestCase):
         r = _analizar(texto)
         self.assertTrue(r.bloquear)
         self.assertIn("nif", r.clases)
+
+    def test_r12_nif_con_un_numero_delante(self):
+        # LA FUGA REAL (16/07/2026). Este banco estaba VERDE con 11 casos y este
+        # agujero pasó: ninguno ponia un numero DELANTE del DNI.
+        #
+        # Causa: el candidato se buscaba con finditer, que NO solapa. Un digito
+        # hasta 4 caracteres antes se tragaba el DNI en un match invalido, la
+        # validacion fallaba, y el escaneo reanudaba DESPUES del match sin volver
+        # a mirar el DNI. Se fugaban 5 de cada 10 frases naturales con un DNI.
+        #
+        # La primera de la lista es la linea de nomina seudonimizada que ORIGINO
+        # este proyecto: el gate se fugaba justo en el dato que existe para vigilar.
+        for texto in (
+            "EMP001 12345678Z 1850,00",
+            "Total 100 12345678Z",
+            "Expediente 2026 12345678Z abierto",
+            "Factura 4 12345678Z pagada",
+            "Ref 99 12345678Z",
+        ):
+            with self.subTest(texto=texto):
+                r = _analizar(texto)
+                self.assertTrue(r.bloquear, "FUGA: %r" % texto)
+                self.assertIn("nif", r.clases)
+
+    def test_r13_numero_delante_sin_dni_no_bloquea(self):
+        # La guarda del anterior: cerrar la fuga NO puede traer falsos positivos.
+        # Si bloqueara aqui, el gate se acabaria desactivando, que es peor.
+        for texto in (
+            "Referencia 12345678A del pedido",   # letra de control INCORRECTA
+            "Codigo 001 20260716 del asiento",   # solo digitos, no hay letra
+            "El cierre de marzo suma 12.400,00 EUR",
+        ):
+            with self.subTest(texto=texto):
+                r = _analizar(texto)
+                self.assertFalse(r.bloquear, "FALSO POSITIVO: %r" % texto)
 
 
 class RedTeamFalloCerrado(unittest.TestCase):

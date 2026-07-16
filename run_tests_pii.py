@@ -3,9 +3,11 @@
 run_tests_pii.py — SUITE DE ACEPTACION (escrita EN ROJO) del Portero de PII saliente.
 
 Autor: verificador-programador (enjambre TechAcces). 11/07/2026.
-Estado esperado HOY: ROJO LIMPIO. El detector `portero_pii.py` NO existe todavia,
-asi que TODOS los tests deben fallar por ImportError/ModuleNotFoundError, no por
-errores de sintaxis del propio test. Lo escribe el constructor-programador despues.
+Esta suite se escribio ANTES que el detector, para fijar el liston sin conocer la
+implementacion. En aquel momento el estado esperado era ROJO LIMPIO: `portero_pii.py`
+no existia y todos los tests fallaban por ImportError, no por errores del propio test.
+El detector lo escribio despues otra persona, contra este contrato. Hoy la suite esta
+en VERDE, y por eso sigue aqui: lo que fija el liston no se retoca al implementarlo.
 
 ===============================================================================
 CONTRATO DE INTERFAZ (el constructor queda RESTRINGIDO a esto)
