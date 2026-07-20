@@ -1,0 +1,40 @@
+name: ci
+
+# Por que existe: hasta el 20/07/2026 este repo no tenia CI.
+#
+# Los TRES bancos se verificaron en verde en local antes de cablear esto
+# (run_tests_pii, redteam_pii y regresion_pii). Las versiones de la matriz no se
+# probaron en local.
+#
+# NO se ejecuta aqui el escaner de repos publicos, y es a proposito. Ese escaner
+# excluye los fixtures del portero porque contienen PII sintetica por diseño; en el
+# CI de ESTE repo se excluiria justo lo que deberia mirar. Ademas vive en un repo
+# privado y no es alcanzable desde aqui. Un gate que pasa vacuamente es peor que no
+# tener gate: da la señal sin hacer el trabajo.
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      # Biblioteca estandar unicamente.
+      - name: Banco de aceptacion (fail-closed)
+        run: python run_tests_pii.py
+
+      - name: Sondas de red-team
+        run: python redteam_pii.py
+
+      - name: Banco de regresion
+        run: python regresion_pii.py
