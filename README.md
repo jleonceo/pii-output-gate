@@ -48,7 +48,7 @@ PII no puede filtrar PII.**
 Tres comprobaciones, ninguna adivina:
 
 1. **NIF y NIE**: no basta con que el patrón encaje. Se valida la **letra de control** (módulo 23). Un
-   `12345678A` con la letra que no toca no es un DNI, es un número, y no bloquea.
+   `12345678A` con la letra que no toca no bloquea, porque no es un DNI: es un número.
 2. **IBAN**: mismo criterio, se valida el **módulo 97** del estándar. Nada de bloquear cualquier cosa que
    empiece por ES.
 3. **Nombres**: contra una deny-list que tú le pasas. Nunca se versiona: entra como parámetro.
@@ -209,7 +209,7 @@ Three checks, none of them guessing:
 
 1. **NIF and NIE** (Spanish tax and identity numbers: NIF for nationals, NIE for foreign residents):
    matching the pattern is not enough. The **check letter** is validated (mod 23). A `12345678A` with the
-   wrong letter is not an ID; it is a number, and it does not block.
+   wrong letter does not block, because it is not an ID: it is a number.
 2. **IBAN**: same idea, the standard's **mod-97** checksum is validated. No blocking anything that merely
    starts with ES.
 3. **Names**: against a deny-list you pass in. It is never committed: it arrives as a parameter.
