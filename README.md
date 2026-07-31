@@ -18,7 +18,7 @@ Un agente de IA que trabaja con datos reales acaba, tarde o temprano, publicando
 commit, un correo, un fichero.
 
 Este proyecto nace de un escape real. Un agente publicó unas nóminas después de sustituir los nombres
-por `EMP001`, `EMP002`, y las dio por limpias. No lo estaban. Seudonimizar no es anonimizar: cambiar el
+por `EMP001` y `EMP002`. Las dio por limpias. No lo estaban. Seudonimizar no es anonimizar: cambiar el
 nombre por un código no borra el dato, lo disfraza, y el resto de la nómina sigue ahí para deshacer el
 disfraz. Y no había nada detrás que lo parase.
 
@@ -54,7 +54,7 @@ Tres comprobaciones, ninguna adivina:
 3. **Nombres**: contra una deny-list que tú le pasas. Nunca se versiona: entra como parámetro.
 
 Antes de comparar, el texto se normaliza a fondo: fuera los caracteres invisibles (la categoría Unicode
-`Cf` entera, no una lista de unos cuantos), y se mapean los alfabetos que se dibujan igual que el latino.
+`Cf` entera, no una lista de unos cuantos) y se mapean los alfabetos que se dibujan igual que el latino.
 Esa parte no es cosmética, es la que aguanta el red team.
 
 Todo vive en `portero_pii.py`: normalización, NIF/NIE mod-23, IBAN mod-97 y deny-list.
@@ -103,7 +103,7 @@ Ejecuta la demo y verás el último caso:
 FRONTERA DECLARADA: un nombre que NO esta en la deny-list -> DEJA SALIR
 ```
 
-`Ramiro Villalobos` es un nombre, y sale. **No es un fallo: es el diseño.**
+`Ramiro Villalobos` es un nombre y sale. **No es un fallo: es el diseño.**
 
 Esta capa caza lo que puede *comprobar*: una lista que le das, un dígito de control que valida. Un detector
 que bloqueara todo lo que parece un nombre daría falsos positivos, y un gate con falsos positivos se acaba
@@ -145,13 +145,13 @@ Antes de publicar esto fui a mirar qué había. Hay bastante:
 - **`python-stdnum`** valida NIF, NIE, CIF, IBAN, CUPS y referencia catastral, sin dependencias, y con más
   cobertura que esto.
 
-Así que esto no es un producto: para casi cualquier caso, usa Presidio. Lo que queda aquí, y por lo que se
-publica, es el método: una puerta que falla cerrada, un red team de verdad, y un rojo reportado como rojo.
+Así que esto no es un producto: para casi cualquier caso, usa Presidio. Se publica por el método que
+queda aquí: una puerta que falla cerrada, un red team de verdad y un rojo reportado como rojo.
 
 ### Datos y privacidad
 
 Todo lo que hay en este repo es inventado o es el ejemplo canónico público de cada estándar: los IBAN de
-documentación (español, portugués y alemán), el NIF `12345678Z` y los NIE de prueba, y nombres de manual
+documentación (español, portugués y alemán), el NIF `12345678Z`, los NIE de prueba y nombres de manual
 (`Fulano Menganez`, `Zutana Perez`, `Ramiro Villalobos`). Cero PII real. La deny-list nunca se versiona:
 entra como parámetro.
 
