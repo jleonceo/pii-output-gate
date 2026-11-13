@@ -2,6 +2,8 @@ English version: [README.en.md](README.en.md)
 
 # pii-output-gate
 
+[![ci](https://github.com/jleonceo/pii-output-gate/actions/workflows/ci.yml/badge.svg)](https://github.com/jleonceo/pii-output-gate/actions/workflows/ci.yml)
+
 **Una puerta de salida para agentes de IA: lo que lleva datos personales no sale.**
 
 Sin dependencias (solo Python estándar), sin base de datos, sin IA, sin red.

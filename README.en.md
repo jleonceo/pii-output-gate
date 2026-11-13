@@ -2,6 +2,8 @@ Versión en español: [README.md](README.md)
 
 # pii-output-gate
 
+[![ci](https://github.com/jleonceo/pii-output-gate/actions/workflows/ci.yml/badge.svg)](https://github.com/jleonceo/pii-output-gate/actions/workflows/ci.yml)
+
 **An output gate for AI agents: anything carrying personal data does not leave.**
 
 No dependencies (standard Python only), no database, no AI, no network.
