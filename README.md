@@ -41,6 +41,19 @@ PII no puede filtrar PII.**
 
 ## Cómo funciona
 
+```mermaid
+flowchart TD
+    T[Texto que va a salir<br/>informe, commit, correo] --> N[Normalización<br/>caracteres invisibles y alfabetos parecidos]
+    N --> C1{NIF o NIE<br/>¿letra de control válida?}
+    N --> C2{IBAN<br/>¿módulo 97 válido?}
+    N --> C3{Nombres<br/>¿están en la deny-list?}
+    C1 & C2 & C3 -->|Alguno sí| BL[Bloquea]
+    C1 & C2 & C3 -->|Ninguno| OK[Sale]
+    style BL fill:#ffebee,stroke:#c62828,color:#b71c1c
+    style OK fill:#e8f5e9,stroke:#2e7d32,color:#1b5e20
+```
+
+
 Tres comprobaciones, ninguna adivina:
 
 1. **NIF y NIE**: no basta con que el patrón encaje. Se valida la **letra de control** (módulo 23). Un

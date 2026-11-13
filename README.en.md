@@ -44,6 +44,19 @@ not leak PII.**
 
 ## How it works
 
+```mermaid
+flowchart TD
+    T[Text about to leave<br/>report, commit, email] --> N[Normalisation<br/>invisible characters and look-alike alphabets]
+    N --> C1{Spanish ID number<br/>valid control letter?}
+    N --> C2{IBAN<br/>valid modulo 97?}
+    N --> C3{Names<br/>on the deny list?}
+    C1 & C2 & C3 -->|Any of them| BL[Blocks]
+    C1 & C2 & C3 -->|None| OK[Goes out]
+    style BL fill:#ffebee,stroke:#c62828,color:#b71c1c
+    style OK fill:#e8f5e9,stroke:#2e7d32,color:#1b5e20
+```
+
+
 Three checks, none of them guessing:
 
 1. **NIF and NIE** (Spanish tax and identity numbers: NIF for nationals, NIE for foreign residents):
